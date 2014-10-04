@@ -8,13 +8,18 @@
 * Author URI: http://johannorberg.biz
 */
 
-namespace pjnorberg;
+include_once('wp-batch-convert.class.php');
 
-class BatchConvert {
-
-    public function __construct() {
-
-    }
-}
-
-$BatchConvert = new BatchConvert();
+$BatchConvert = new pjnorberg\BatchConvert(array(
+    'post_status' => array(
+        'draft',
+    ),
+    'post_types' => array(
+        'post',
+        'page',
+    ),
+    'meta_keys' => array(
+        'my_test_key',
+        'my_other_test_key',
+    )
+));
