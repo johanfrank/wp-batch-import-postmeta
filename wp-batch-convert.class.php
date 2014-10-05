@@ -77,60 +77,71 @@ class BatchConvert {
 
     public function render_export_page() {
 
-        echo __('<p>This plugin will export all selected posts with the following post meta fields (with current value if available):</p>');
+        if ($this->settings) {
 
-        echo '<ul>';
+            echo __('<p>This plugin will export all selected posts with the following post meta fields (with current value if available):</p>');
 
-        foreach ($this->settings['meta_keys'] as $meta_key) {
-            echo "<li><strong>$meta_key</strong></li>";
+            echo '<ul>';
+
+            foreach ($this->settings['meta_keys'] as $meta_key) {
+                echo "<li><strong>$meta_key</strong></li>";
+            }
+
+            echo '</ul>';
+
+            echo '<p><a href="/downloads/wp-posts-export.csv" class="button">'.__('Generate CSV file').'</a></p>';
+
+        } else {
+            echo __('<p>You need configure the settings for this plugin. See Batch settings under the Tools menu.</p>');
         }
-
-        echo '</ul>';
-
-        echo '<p><a href="/downloads/wp-posts-export.csv" class="button">'.__('Generate CSV file').'</a></p>';
     }
 
     public function render_import_page() {
 
-        if (isset($_FILES['userfile'])) {
+        if ($this->settings) {
 
-            $filename = $_FILES['userfile']['tmp_name'];
+            if (isset($_FILES['userfile'])) {
 
-            $fh = fopen($filename, 'r');
-            $counter = 0;
-            $success = 0;
+                $filename = $_FILES['userfile']['tmp_name'];
 
-            while($data = fgetcsv($fh, 0, ';')) {
+                $fh = fopen($filename, 'r');
+                $counter = 0;
+                $success = 0;
 
-                if ($counter) {
+                while($data = fgetcsv($fh, 0, ';')) {
 
-                    wp_update_post(array(
-                        'ID' => $data[0],
-                        'post_title' => utf8_encode($data[1]),
-                    ));
+                    if ($counter) {
 
-                    $meta_key_counter = 3;
-                    $success++;
+                        wp_update_post(array(
+                            'ID' => $data[0],
+                            'post_title' => utf8_encode($data[1]),
+                        ));
 
-                    foreach ($this->settings['meta_keys'] as $meta_key) {
-                        update_post_meta($data[0], $meta_key, utf8_encode($data[$meta_key_counter]));
-                        $meta_key_counter++;
+                        $meta_key_counter = 3;
+                        $success++;
+
+                        foreach ($this->settings['meta_keys'] as $meta_key) {
+                            update_post_meta($data[0], $meta_key, utf8_encode($data[$meta_key_counter]));
+                            $meta_key_counter++;
+                        }
                     }
+
+                    $counter++;
                 }
 
-                $counter++;
+                echo '<p>'.__('Successfully updated <strong>')." $success ".__('posts')."!</strong></p>";
+
+                fclose($fh);
+
+            } else {
+                echo '<p><form enctype="multipart/form-data" action="" method="POST">';
+                echo '<input type="hidden" name="MAX_FILE_SIZE" value="30000">';
+                echo __('Choose CSV file to upload: ').'<br><input name="userfile" type="file"><br>';
+                echo '<input type="submit" class="button" value="'.__('Upload file').'">';
+                echo '</form></p>';
             }
-
-            echo '<p>'.__('Successfully updated <strong>')." $success ".__('posts')."!</strong></p>";
-
-            fclose($fh);
-
         } else {
-            echo '<p><form enctype="multipart/form-data" action="" method="POST">';
-            echo '<input type="hidden" name="MAX_FILE_SIZE" value="30000">';
-            echo __('Choose CSV file to upload: ').'<br><input name="userfile" type="file"><br>';
-            echo '<input type="submit" class="button" value="'.__('Upload file').'">';
-            echo '</form></p>';
+            echo __('<p>You need configure the settings for this plugin. See Batch settings under the Tools menu.</p>');
         }
     }
 
@@ -149,7 +160,7 @@ class BatchConvert {
                 'post_type' => $this->settings['post_types']
             ));
 
-            $headings = array('post_id', 'post_title', 'post_modified');
+            $headings = array('post_id', 'post_modified', 'post_title');
 
             if (!empty($this->settings['meta_keys'])) {
 
@@ -163,8 +174,8 @@ class BatchConvert {
             foreach ($posts as $post) {
                 
                 $array[$i][0] = $post->ID;
-                $array[$i][1] = utf8_decode($post->post_title);
-                $array[$i][2] = $post->post_modified;
+                $array[$i][1] = $post->post_modified;
+                $array[$i][2] = utf8_decode($post->post_title);
 
                 $meta_key_counter = 3;
 
