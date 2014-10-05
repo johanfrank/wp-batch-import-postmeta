@@ -110,12 +110,23 @@ class BatchConvert {
                 }
             }
 
+            $meta_key_counter = 3;
+            $i = 0;
+
             foreach ($posts as $post) {
-                $array[] = array(
+                
+                $array[$i] = array(
                     $post->ID,
                     utf8_decode($post->post_title),
                     $post->post_modified,
                 );
+
+                foreach ($this->settings['meta_keys'] as $meta_key) {
+                    $array[$i][$meta_key_counter] = utf8_decode(get_post_meta($post->ID, $meta_key, true));
+                    $meta_key_counter++;
+                }
+
+                $i++;
             }
              
             $fh = fopen('php://output', 'w');
