@@ -35,7 +35,7 @@ class BatchConvert {
 
         echo '</ul>';
 
-        echo '<p><a href="/downloads/field-export.csv" class="button">'.__('Generate CSV file').'</a></p>';
+        echo '<p><a href="/downloads/wp-posts-export.csv" class="button">'.__('Generate CSV file').'</a></p>';
     }
 
     public function render_import_page() {
@@ -57,7 +57,7 @@ class BatchConvert {
 
                     wp_update_post(array(
                         'ID' => $data[0],
-                        'post_title' => $data[1],
+                        'post_title' => utf8_encode($data[1]),
                     ));
 
                     //echo '<pre>'.print_r($data, true).'</pre>';
@@ -65,7 +65,7 @@ class BatchConvert {
                     $meta_key_counter = 3;
 
                     foreach ($this->settings['meta_keys'] as $meta_key) {
-                        update_post_meta($data[0], $meta_key, $data[$meta_key_counter]);
+                        update_post_meta($data[0], $meta_key, utf8_encode($data[$meta_key_counter]));
                         $meta_key_counter++;
                     }
                 }
@@ -73,22 +73,25 @@ class BatchConvert {
                 $counter++;
             }
 
-            fclose($fh);
-        }
+            echo '<p>'.__('Successfully updated <strong>')." $counter ".__('posts')."!</strong></p>";
 
-        echo '<p><form enctype="multipart/form-data" action="" method="POST">';
-        echo '<input type="hidden" name="MAX_FILE_SIZE" value="30000">';
-        echo __('Choose CSV file to upload: ').'<br><input name="userfile" type="file"><br>';
-        echo '<input type="submit" class="button" value="'.__('Upload file').'">';
-        echo '</form></p>';
+            fclose($fh);
+
+        } else {
+            echo '<p><form enctype="multipart/form-data" action="" method="POST">';
+            echo '<input type="hidden" name="MAX_FILE_SIZE" value="30000">';
+            echo __('Choose CSV file to upload: ').'<br><input name="userfile" type="file"><br>';
+            echo '<input type="submit" class="button" value="'.__('Upload file').'">';
+            echo '</form></p>';
+        }
     }
 
     public function output_csv() {
 
-        if ($_SERVER['REQUEST_URI'] == '/downloads/field-export.csv') {
+        if (is_user_logged_in() && $_SERVER['REQUEST_URI'] == '/downloads/wp-posts-export.csv') {
 
             header("Content-type: text/csv; charset=utf-8",true,200);
-            header("Content-Disposition: attachment; filename=field-export.csv");
+            header("Content-Disposition: attachment; filename=wp-posts-export.csv");
             header("Pragma: no-cache");
             header("Expires: 0");
 
@@ -110,8 +113,8 @@ class BatchConvert {
             foreach ($posts as $post) {
                 $array[] = array(
                     $post->ID,
-                    $post->post_title,
-                    $post->post_modified
+                    utf8_decode($post->post_title),
+                    $post->post_modified,
                 );
             }
              
