@@ -114,10 +114,10 @@ class BatchConvert {
 
                         wp_update_post(array(
                             'ID' => $data[0],
-                            'post_title' => utf8_encode($data[1]),
+                            'post_title' => utf8_encode($data[2]),
                         ));
 
-                        $meta_key_counter = 3;
+                        $meta_key_counter = 4;
                         $success++;
 
                         foreach ($this->settings['meta_keys'] as $meta_key) {
@@ -160,7 +160,7 @@ class BatchConvert {
                 'post_type' => $this->settings['post_types']
             ));
 
-            $headings = array('post_id', 'post_modified', 'post_title');
+            $headings = array('post_id', 'post_modified', 'post_title', 'post_url');
 
             if (!empty($this->settings['meta_keys'])) {
 
@@ -176,8 +176,9 @@ class BatchConvert {
                 $array[$i][0] = $post->ID;
                 $array[$i][1] = $post->post_modified;
                 $array[$i][2] = utf8_decode($post->post_title);
+                $array[$i][3] = $post->guid;
 
-                $meta_key_counter = 3;
+                $meta_key_counter = 4;
 
                 foreach ($this->settings['meta_keys'] as $meta_key) {
                     $array[$i][$meta_key_counter] = utf8_decode(get_post_meta($post->ID, $meta_key, true));
