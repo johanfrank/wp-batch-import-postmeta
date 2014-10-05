@@ -10,16 +10,4 @@
 
 include_once('wp-batch-convert.class.php');
 
-$BatchConvert = new pjnorberg\BatchConvert(array(
-    'post_status' => array(
-        'draft',
-    ),
-    'post_types' => array(
-        'post',
-        'page',
-    ),
-    'meta_keys' => array(
-        'my_test_key',
-        'my_other_test_key',
-    )
-));
+$BatchConvert = new pjnorberg\BatchConvert();
